@@ -5,17 +5,36 @@ security:
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
         # used to reload user from session & other features (e.g. switch_user)
+        backend_users:
+            memory:
+                users:
+                    super_admin@app.com: { password: '$2y$13$FkTkPVua5.3mDe.xg4kPw.FV6T7ohSurqYu.AnCzfHaRBQZ7der1i', roles: ['ROLE_ADMIN'] }
+                    super_api@app.com: { password: '$2y$13$FkTkPVua5.3mDe.xg4kPw.FV6T7ohSurqYu.AnCzfHaRBQZ7der1i', roles: ['ROLE_API'] }        
         app_user_provider:
             entity:
                 class: App\Entity\User
                 property: email
+        all_users:
+            chain:
+                providers: ['app_user_provider', 'backend_users']      
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         main:
             lazy: true
-            provider: app_user_provider
+            provider: all_users
+            custom_authenticator: App\Security\AppAuthenticator
+            logout:
+                path: app_logout
+                # where to redirect after logout
+                # target: app_any_route
+
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
+                path: /
+                always_remember_me: true
 
             # activate different ways to authenticate
             # https://symfony.com/doc/current/security.html#the-firewall
