@@ -3,12 +3,13 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: '`user`')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -28,11 +29,25 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?string $password = null;
 
+    #[ORM\Column]
+    private ?bool $active = false;
+
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Position::class,cascade: ['persist'])]
+    private Collection $positions;
+
     #[ORM\Column(length: 255)]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255)]
     private ?string $lastName = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $memo = null;
+
+    public function __construct()
+    {
+        $this->positions = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -104,6 +119,65 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // $this->plainPassword = null;
     }
 
+    public function isActive(): ?bool
+    {
+        return $this->active;
+    }
+
+    public function setActive(bool $active): static
+    {
+        $this->active = $active;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Position>
+     */
+    public function getPositions(): Collection
+    {
+        return $this->positions;
+    }
+
+    public function addPosition(Position $position): static
+    {
+        if (!$this->positions->contains($position)) {
+            $this->positions->add($position);
+            $position->setUser($this);
+        }
+
+        return $this;
+    }
+
+    public function removePosition(Position $position): static
+    {
+        if ($this->positions->removeElement($position)) {
+            // set the owning side to null (unless already changed)
+            if ($position->getUser() === $this) {
+                $position->setUser(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function __toString()
+    {
+        return 
+        $this->getEmail();
+    }
+
+    public function setPositions(Collection $positions): static
+    {
+        $this->positions = $positions;
+        foreach ($this->positions as $position) {
+            $position->setUser($this);
+            // $this->addPosition($position);
+          }
+
+        return $this;
+    }
+
     public function getFirstName(): ?string
     {
         return $this->firstName;
@@ -127,4 +201,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    public function getMemo(): ?string
+    {
+        return $this->memo;
+    }
+
+    public function setMemo(?string $memo): static
+    {
+        $this->memo = $memo;
+
+        return $this;
+    }
+
 }
