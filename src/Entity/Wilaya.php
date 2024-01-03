@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\WilayaRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: WilayaRepository::class)]
@@ -23,6 +25,14 @@ class Wilaya
 
     #[ORM\ManyToOne(inversedBy: 'dataEntryWilayas',cascade: ['persist'])]
     private ?Position $dataEntryManager = null;
+
+    #[ORM\ManyToMany(targetEntity: Position::class, inversedBy: 'representedWilayas',cascade: ['persist'])]
+    private Collection $representatives;
+
+    public function __construct()
+    {
+        $this->representatives = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -71,5 +81,31 @@ class Wilaya
         $this->getCode().
         "-".
         $this->getName() ;
+    }
+
+    //-------------------------New
+
+    /**
+     * @return Collection<int, Position>
+     */
+    public function getRepresentatives(): Collection
+    {
+        return $this->representatives;
+    }
+
+    public function addRepresentative(Position $representative): static
+    {
+        if (!$this->representatives->contains($representative)) {
+            $this->representatives->add($representative);
+        }
+
+        return $this;
+    }
+
+    public function removeRepresentative(Position $representative): static
+    {
+        $this->representatives->removeElement($representative);
+
+        return $this;
     }
 }

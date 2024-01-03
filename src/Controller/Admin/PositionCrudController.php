@@ -51,7 +51,11 @@ class PositionCrudController extends AbstractCrudController
             AssociationField::new('representedProducts','Represented Products (Medical Representative)')
             ->setRequired(false)
             ->setFormTypeOptionIfNotSet('by_reference', false)
-            ->hideOnIndex(),   
+            ->hideOnIndex(),
+            AssociationField::new('representedWilayas','Represented Wilayas (Medical/Sales/Pharm Representative & KAM)')
+            ->setRequired(false)
+            ->setFormTypeOptionIfNotSet('by_reference', false)
+            ->hideOnIndex(), 
             AssociationField::new('dataEntryWilayas','Data Entry Wilayas (Data Entry Manager)')
             ->setRequired(false)
             ->setFormTypeOptionIfNotSet('by_reference', false)

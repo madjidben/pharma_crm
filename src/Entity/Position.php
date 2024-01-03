@@ -44,6 +44,9 @@ class Position
     #[ORM\OneToMany(mappedBy: 'dataEntryManager', targetEntity: Wilaya::class,cascade: ['persist'])]
     private Collection $dataEntryWilayas;
 
+    #[ORM\ManyToMany(targetEntity: Wilaya::class, mappedBy: 'representatives',cascade: ['persist'])]
+    private Collection $representedWilayas;
+
     public function __construct()
     {
         $this->businessUnits = new ArrayCollection();
@@ -51,6 +54,7 @@ class Position
         $this->managedProducts = new ArrayCollection();
         $this->representedProducts = new ArrayCollection();
         $this->dataEntryWilayas = new ArrayCollection();
+        $this->representedWilayas = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -298,6 +302,35 @@ class Position
         foreach ($this->dataEntryWilayas as $wilaya) {
             $wilaya->setDataEntryManager($this);
           }
+
+        return $this;
+    }
+
+    //-------------------------New
+
+    /**
+     * @return Collection<int, Wilaya>
+     */
+    public function getRepresentedWilayas(): Collection
+    {
+        return $this->representedWilayas;
+    }
+
+    public function addRepresentedWilaya(Wilaya $representedWilaya): static
+    {
+        if (!$this->representedWilayas->contains($representedWilaya)) {
+            $this->representedWilayas->add($representedWilaya);
+            $representedWilaya->addRepresentative($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRepresentedWilaya(Wilaya $representedWilaya): static
+    {
+        if ($this->representedWilayas->removeElement($representedWilaya)) {
+            $representedWilaya->removeRepresentative($this);
+        }
 
         return $this;
     }
